@@ -1,0 +1,10 @@
+           This system is managed by Ansible
+
+OS            : {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_distribution_release }} {{ ansible_machine }}
+Kernel        : {{ ansible_kernel }}
+Hostname      : {{ ansible_fqdn }}
+IP address    : {{ ansible_eth0.ipv4.address }}
+MAC adress    : {{ ansible_eth0.macaddress }}
+CPU info      : {{ ansible_processor_cores }} cores {{ ansible_processor_vcpus }} threads
+RAM info      : {{ ansible_memtotal_mb }} Mb
+Last update   : {{ ansible_date_time.date }} {{ ansible_date_time.time }}

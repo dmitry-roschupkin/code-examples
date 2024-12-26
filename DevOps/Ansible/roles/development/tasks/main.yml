@@ -1,0 +1,39 @@
+---
+
+- name: Create work directory
+  file:
+    path: /work
+    state: directory
+    mode: 0777
+    owner: www-data
+    group: www-data
+
+- name: Copy workmount script
+  copy:
+    src: workmount
+    dest: /usr/local/bin
+    mode: 0744
+    owner: root
+    group: root
+
+- name: Copy workmount unit file
+  copy:
+    src: workmount.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+
+- name: Ensure workmount service enabled and running
+  service: name=workmount state=started enabled=yes
+
+- name: Ensuring that mysql logs exists
+  file: path={{ item }} state=touch mode=0777
+  with_items:
+    - /work/log/mysql/error.log
+    - /work/log/mysql/slow.log
+
+#- name: Ensuring that mysql dir exists
+#  file:
+#    path: /work/mysql
+#    state: directory
+#    mode: 0777

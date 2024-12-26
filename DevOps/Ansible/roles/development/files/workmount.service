@@ -1,0 +1,10 @@
+[Unit]
+Description=Mounting vboxsf share work
+After=virtualbox-guest-utils.service vboxadd.service
+Before=apache2.service mysql.service
+
+[Service]
+ExecStart=/usr/local/bin/workmount
+
+[Install]
+WantedBy=multi-user.target

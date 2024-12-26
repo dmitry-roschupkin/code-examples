@@ -1,0 +1,12 @@
+---
+
+- name: Create project directories
+  file:
+    path: /var/www/{{ item }}-project
+    state: directory
+    mode: 0777
+    owner: www-data
+    group: www-data
+  vars:
+    dir_indexes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  with_items: "{{ dir_indexes }}"

@@ -1,0 +1,21 @@
+---
+
+- hosts: all
+  user: root
+#  become: True
+  vars_files:
+    - settings/production.yml
+  roles:
+    - { role: common, tags: common }
+    - { role: users, tags: common }
+    - { role: lamp, tags: [ 'apache2', 'php' ] }
+
+# This task is deprecated. Certificates adding use another ansible script into /etc/techno-cert/*
+#    - { role: ssl, tags: ssl }
+
+    - { role: apache_vhosts, tags: vhosts }
+    - { role: git-keys, tags: ['git', 'keys', 'root', 'www-data'] }
+    - { role: project, tags: project }
+    - { role: production, tags: 'production' }
+    - { role: iptables, tags: production }
+    - { role: zabbix, tags: zabbix }

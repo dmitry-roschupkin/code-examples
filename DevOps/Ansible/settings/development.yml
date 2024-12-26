@@ -1,0 +1,114 @@
+#---------------------------------------- APT ------------------------------------------
+apt_install_zabbix_agent: false
+apt_install_openvpn: false
+
+#------------------------------------- APPACHE 2 ---------------------------------------
+apache_logroot: /work/log/apache2
+apache2_mods_enabled:
+  - rewrite
+
+#------------------------------------- VHOSTS ------------------------------------------
+vhosts:
+  test.loc:
+    docroot: "/work/webroot/test"
+    docroot_options:                                                      # Optional
+      - Options Indexes
+  sp.project.loc:
+    docroot: "/work/webroot/project/supplier/desktop/web"
+    aliases: "www.sp.project.loc"
+  fe.project.loc:
+     docroot: "/work/webroot/project/frontend/desktop/web"
+     aliases: "www.fe.project.loc"
+  be.project.loc:
+     docroot: "/work/webroot/project/backend/desktop/web"
+     aliases: "www.be.project.loc"
+  m.be.project.loc:
+     docroot: "/work/webroot/project/backend/mobile/web"
+     aliases: "www.m.be.project.loc"
+  xhprof.loc:
+    docroot: "/usr/share/php/xhprof_html"
+
+#  Vhosts example
+#
+#  vhosts:
+#    project.loc:
+#      docroot: "/work/webroot/project/backend/desktop/web"  # Required
+#      aliases: "www.project.loc"                                            # Optional
+#      docroot_options:                                                      # Optional
+#        - Options Indexes FollowSymLinks MultiViews
+#        - AllowOverride All
+#      php_options:                                                          # Optional
+#        - php_value max_input_time -1
+#        - php_value max_execution_time 0
+
+#----------------------------------- PHP SETTINGS  -------------------------------------
+# If you adding section for php_options, you need to modify role!
+php_options:
+  PHP:
+    max_execution_time: 500
+    memory_limit: 1024M
+    error_reporting: E_ALL
+    display_errors: On
+    display_startup_errors: On
+    track_errors: On
+    log_errors: On
+    ignore_repeated_errors: Off
+    post_max_size: 512M
+    upload_max_filesize: 512M
+    session.gc_divisor: 20000
+    session.gc_maxlifetime: 3600
+    max_input_vars: 100000
+  Date:
+    date.timezone: "Europe/Kiev"
+
+php_options_cli:
+  PHP:
+    max_execution_time: 0
+    memory_limit: -1
+
+#------------------------------------ Apache SETTINGS ---------------------------------------
+apache:
+  buffered_logs: "OFF"
+
+#------------------------------------ DB SETTINGS --------------------------------------
+mysql:
+  datadir: /var/lib/mysql
+  logroot: /work/log/mysql
+  tmp_table_size: 128M
+
+# query_cache_typedeprecated
+  query_cache_type: 0
+
+  max_heap_table_size: 128M
+  key_buffer_size: 16M
+  max_allowed_packet: 8M
+  thread_stack: 262144
+  thread_cache_size: -1
+
+# query_cache_limit is deprecated
+  query_cache_limit: 0
+
+  max_binlog_size: 256M
+  sql_mode: NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+#sql_mode = STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  innodb_buffer_pool_size: 256M
+  innodb_log_file_size: 128M
+  innodb_log_buffer_size: 8M
+
+db_user: db_user_example
+db_password: db_pass_example
+db_priv: "*.*:ALL"
+
+#------------------------------- PROJECT SETTINGS -----------------------------------
+project_path: /work/webroot/project
+project_env: Development
+project_composer_options: ''
+project_submodules: yes
+
+#------------------------------------ XDEBUG -------------------------------------------
+xdebug:
+  profiler_output_dir: '/work/xdebug'
+
+#----------------------------------- OpCache -------------------------------------------
+opcache:
+  opcache.enable_cli: 1

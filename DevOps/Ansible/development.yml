@@ -1,0 +1,23 @@
+---
+
+- hosts: all
+  user: root
+#  become: True
+  vars_files:
+    - settings/development.yml
+    # FIXME: it's temporary crutch, fix in future
+    - [ "settings/local.yml", "settings/development.yml" ]
+  roles:
+    - { role: common, tags: common }
+    - { role: development, tags: [ 'development', 'mount' ] }
+    - { role: lamp, tags: [ 'apache2', 'php' ] }
+    - { role: apache_vhosts, tags: vhosts }
+    - { role: xdebug, tags: xdebug }
+    - { role: phantomjs, tags: tests }
+    - { role: xhprof, tags: xhprof }
+#    - { role: iptables, tags: dev }
+
+#FIXME: need drop next tasks for development
+#    - { role: jenkins, tags: jenkins }
+#    - { role: git-keys, tags: ['git', 'keys', 'root', 'www-data'] }
+#    - { role: project, tags: project }

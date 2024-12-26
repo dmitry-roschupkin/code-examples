@@ -1,0 +1,15 @@
+---
+- name: Installing xdebug
+  apt: name=php-xdebug state=present update_cache=yes
+
+- name: Crutch for xdebug
+  copy:
+    src: xdebug.sh
+    dest: /usr/local/sbin/xdebug
+    owner: root
+    mode: 0555
+
+- name: Setting xdebug ini
+  template:
+    src: xdebug.ini
+    dest: /etc/php/7.3/mods-available/xdebug.ini

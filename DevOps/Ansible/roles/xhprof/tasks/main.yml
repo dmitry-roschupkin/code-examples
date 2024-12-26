@@ -1,0 +1,45 @@
+---
+
+- name: Clone or update XinHui Long xhprof
+  git:
+    repo: https://github.com/longxinH/xhprof.git
+    dest: /usr/src/xhprof
+    force: yes
+  register: xinHuiLongXhprof
+
+- name: Run phpize
+  command: 'phpize'
+  args:
+    chdir: /usr/src/xhprof/extension/
+  when: xinHuiLongXhprof.changed
+
+- name: Configure XinHui Long xhprof
+  command: './configure --with-php-config=/usr/bin/php-config'
+  args:
+    chdir: /usr/src/xhprof/extension/
+  when: xinHuiLongXhprof.changed
+
+- name: Make and install XinHui Long xhprof
+  shell: 'make && make install'
+  args:
+    chdir: /usr/src/xhprof/extension/
+  when: xinHuiLongXhprof.changed
+
+
+- name: Copying xhprof html dir
+  command: 'cp -r -f /usr/src/xhprof/xhprof_html/ /usr/share/php/'
+  when: xinHuiLongXhprof.changed
+
+- name: Copying xhprof lib dir
+  command: 'cp -r -f /usr/src/xhprof/xhprof_lib/ /usr/share/php/'
+  when: xinHuiLongXhprof.changed
+
+- name: Copying xhprof.ini
+  copy:
+    src: xhprof.ini
+    dest: /etc/php/7.3/mods-available/xhprof.ini
+
+- name: Enabling php modules
+  command: 'phpenmod xhprof'
+  notify:
+  - restart apache2

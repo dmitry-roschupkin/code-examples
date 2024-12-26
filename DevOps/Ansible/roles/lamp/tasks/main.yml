@@ -1,0 +1,164 @@
+---
+
+- name: Download Percona apt Repository package
+  get_url:
+    url="https://repo.percona.com/apt/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    dest="/tmp"
+
+- name: Install Percona apt Repository package
+  apt: deb="/tmp/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+  ignore_errors: yes
+
+- name: Set owher to project
+  command: 'percona-release setup ps80'
+
+- name: Installing LAMP components
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - percona-server-server
+    - percona-xtrabackup-80
+    #- mytop
+    - php
+    - php-dev
+    - php-pear
+    - php-curl
+    - php-imagick
+    #- php-mcrypt
+    - php-intl
+    - php-timer
+    - php-mysql
+    - php-gd
+    - php-memcached
+    #- php7.0-xsl
+    - php-xsl
+    - php-zip
+    - php-net-socket
+    - php-mbstring
+    - php-soap
+    - apache2
+    - libapache2-mod-php
+    - librsvg2-2
+    - libmagickcore-6.q16-3-extra
+    - p7zip
+    - p7zip-full
+- name: Copying php7enmod
+  copy:
+    src: php7enmod.sh
+    dest: /usr/local/bin/php7enmod
+    owner: root
+    mode: 0755
+
+- name: Copying php7dismod
+  copy:
+    src: php7dismod.sh
+    dest: /usr/local/bin/php7dismod
+    owner: root
+    mode: 0755
+
+- name: Install composer
+  shell: 'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer'
+  args:
+    creates: /usr/local/bin/composer
+
+- name: Set apache2.conf
+  template: src=apache2.conf dest=/etc/apache2/apache2.conf
+
+- name: Set apache2 envvars
+  template: src=envvars dest=/etc/apache2/envvars
+
+- name: Enabling apache modules
+  command: 'a2enmod "{{ item }}"'
+  with_items: "{{ apache2_mods_enabled }}"
+
+- name: Create apache2 site-password directory
+  file:
+    path: /etc/apache2/site-password
+    state: directory
+
+- name: Create mysql datadir
+  file:
+    path: "{{ mysql.datadir }}"
+    state: directory
+    mode: 0777
+    owner: mysql
+    group: mysql
+
+- name: Set mysql my.cnf
+  template: src=my.cnf dest=/etc/mysql/mysql.conf.d/mysqld.cnf
+
+- name: Restarting services to apply new configuration
+  service: name={{ item }} state=restarted
+  with_items:
+    - apache2
+    - mysql
+
+- name: Check if services are running
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - apache2
+    - mysql
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host: localhost
+    state: absent
+  ignore_errors: yes
+
+- name: Create mysql user
+  mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_priv }}"
+    host: '%'
+  ignore_errors: yes
+
+- name: Setting php options for apache2
+  ini_file:
+    dest: /etc/php/7.3/apache2/php.ini
+    section: PHP
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict: "{{ php_options.PHP }}"
+  notify:
+  - restart apache2
+
+- name: Setting php options for cli
+  ini_file:
+    dest: /etc/php/7.3/cli/php.ini
+    section: PHP
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict: "{{ php_options.PHP | combine(php_options_cli.PHP, recursive=True) }}"
+  notify:
+  - restart apache2
+
+- name: Setting php options
+  ini_file:
+    dest: /etc/php/7.3/apache2/php.ini
+    section: Date
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict: "{{ php_options.Date }}"
+  notify:
+  - restart apache2
+
+- name: Setting php options for cli
+  ini_file:
+    dest: /etc/php/7.3/cli/php.ini
+    section: Date
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict: "{{ php_options.Date }}"
+  notify:
+  - restart apache2
+
+- name: Setting php options for opcache
+  ini_file:
+    dest: /etc/php/7.3/mods-available/opcache.ini
+    section: null
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_dict: "{{ opcache }}"
+  notify:
+  - restart apache2

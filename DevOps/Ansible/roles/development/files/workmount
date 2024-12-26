@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+mountpoint -q /work || mount -t vboxsf -o uid=33,gid=33 work /work
+# mountpoint -q /var/lib/mysql || mount -t vboxsf -o uid=999,gid=1001 mysql /var/lib/mysql

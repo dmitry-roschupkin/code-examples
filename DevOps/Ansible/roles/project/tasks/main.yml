@@ -1,0 +1,61 @@
+---
+
+- name: Clone or update project
+  git:
+    repo: git@github.com:webmaster-project/project.com.git
+    dest: "{{ project_path }}"
+    version: master
+    recursive: "{{ project_submodules }}"
+    track_submodules: yes
+    accept_hostkey: yes
+    update: no
+    #force: yes
+  register: project
+
+- name: Set owher to project
+  command: 'chown -R www-data:www-data {{ project_path }}'
+
+- name: Composer self-update
+  command: 'composer self-update'
+  args:
+    chdir: "{{ project_path }}"
+  when: project.changed
+
+# Plugin fxp/composer-asset-plugin is Deprecated
+#- name: Composer require fxp/composer-asset-plugin
+#  command: 'composer global require fxp/composer-asset-plugin'
+#  args:
+#    chdir: "{{ project_path }}"
+#  when: project.changed
+
+- name: Composer install
+  command: 'composer install {{ project_composer_options }}'
+  args:
+    chdir: "{{ project_path }}"
+  when: project.changed
+
+- name: Install config files
+  command: "php init --env={{ project_env }} --overwrite=y"
+  args:
+    chdir: "{{ project_path }}"
+  when: project.changed
+
+- name: Enable project cron tasks
+  cron:
+    name: "project cron tasks"
+    job: "php {{ project_path }}/yii crontab"
+    user: www-data
+    cron_file: "/etc/crontab"
+    disabled: "{{ project_disable_cron }}"
+
+- name: Enable web socket server
+  cron:
+    name: "project web socket server"
+    job: "php {{ project_path }}/yii web-socket-server"
+    user: root
+    cron_file: "/etc/crontab"
+    disabled: "{{ project_disable_cron }}"
+#    state: absent # need uncomment to delete a task
+
+- name: Create deploy htpasswd file
+  command: "htpasswd -cb /etc/apache2/site-password/deploy_htpasswd {{ deploy_username }} {{ deploy_password }}"

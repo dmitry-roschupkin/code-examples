@@ -1,0 +1,47 @@
+---
+
+- name: Installing docker and python-pip
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - gnupg2
+    - software-properties-common
+#    - python-pip
+
+#- name: Installing docker-py
+#  pip:
+#    name: docker
+
+#- name: Add docker repository
+#  command: 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"'
+
+- name: Add docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+
+- name: Installing docker-ce
+  apt: name=docker-ce state=present update_cache=yes
+
+# TODO: need run jenkins with user "jenkins" in future
+- name: Run jenkins
+  shell: 'docker ps -a | grep jenkinsci/blueocean || docker run -u root --restart unless-stopped -d -p 8080:8080 -v /home/jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean'
+
+# docker exec -ti keen_brahmagupta ssh -o IdentityFile=/var/jenkins_home/.ssh/keys/jenkins root@192.168.2.100 php --version && ls -la
+# вешеописанная команда для пользователя root для пользователя jenkins нужно так:
+# docker exec -ti keen_brahmagupta ssh -o IdentityFile=/var/jenkins_home/.ssh/keys/jenkins jenkins@192.168.2.100 php --version && ls -la
+
+# Ansible docker generate error:
+# "module_stdout": "Traceback (most recent call last):\r\n  File \"/tmp/ansible_qSVTMt/ansible_module_docker.py\", line 1973, in <module>\r\n    main()\r\n  File \"/tmp/ansible_qSVTMt/ansible_module_docker.py\", line 1912, in main\r\n    manager = DockerManager(module)\r\n  File \"/tmp/ansible_qSVTMt/ansible_module_docker.py\", line 835, in __init__\r\n    self.client = docker.Client(base_url=docker_url,\r\nAttributeError: 'module' object has no attribute 'Client'\r\n",
+# "msg": "MODULE FAILURE"
+
+#- name: Run jenkins
+#  docker:
+#    name: jenkins
+#    image: jenkinsci/blueocean
+#    state: reloaded
+#    pull: always
+#    ports: "8080:8080"
+#    volumes:
+#      - "jenkins-data:/var/jenkins_home"
+#      - "/var/run/docker.sock:/var/run/docker.sock"

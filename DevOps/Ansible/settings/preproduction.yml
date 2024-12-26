@@ -1,0 +1,125 @@
+#---------------------------------------- APT ------------------------------------------
+apt_install_zabbix_agent: true
+apt_install_openvpn: true
+
+#------------------------------------- APPACHE 2 ---------------------------------------
+apache_logroot: /var/log/apache2
+apache2_mods_enabled:
+  - rewrite
+  - proxy
+  - proxy_http
+  - headers
+
+#------------------------------------- VHOSTS ------------------------------------------
+vhosts:
+  # ...
+  # there are was a lot of hosts with settings
+  # ...
+  jenkins.loc:
+    proxy_options:
+      - Order deny,allow
+      - Allow from all
+    options:
+      - ProxyRequests Off
+      - ProxyPreserveHost on
+      - AllowEncodedSlashes NoDecode
+#  Vhosts example
+#
+#  vhosts:
+#    project.loc:
+#      docroot: "/work/webroot/project/backend/desktop/web"  # Required
+#      aliases: "www.project.loc"                                            # Optional
+#      docroot_options:                                                      # Optional
+#        - Options Indexes FollowSymLinks MultiViews
+#        - AllowOverride All
+#      php_options:                                                          # Optional
+#        - php_value max_input_time -1
+#        - php_value max_execution_time 0
+
+#----------------------------------- PHP SETTINGS  -------------------------------------
+# If you adding section for php_options, you need to modify role!
+php_options:
+  PHP:
+    max_execution_time: 500
+    memory_limit: 1024M
+    error_reporting: E_ALL
+    display_errors: On
+    display_startup_errors: On
+    track_errors: On
+    log_errors: On
+    ignore_repeated_errors: Off
+    post_max_size: 1024M
+    upload_max_filesize: 1024M
+    session.gc_divisor: 20000
+    session.gc_maxlifetime: 3600
+    max_input_vars: 100000
+  Date:
+    date.timezone: "Europe/Kiev"
+
+php_options_cli:
+  PHP:
+    max_execution_time: 0
+    memory_limit: -1
+
+#------------------------------------ Apache SETTINGS ---------------------------------------
+apache:
+  buffered_logs: "OFF"
+
+#------------------------------------ DB SETTINGS --------------------------------------
+mysql:
+  datadir: /var/lib/mysql
+  logroot: /var/log/mysql
+  tmp_table_size: 128M
+
+# query_cache_typedeprecated
+  query_cache_type: 0
+
+  max_heap_table_size: 128M
+  key_buffer_size: 16M
+  max_allowed_packet: 8M
+  thread_stack: 1M
+  thread_cache_size: -1
+
+# query_cache_limit is deprecated
+  query_cache_limit: 0
+
+  max_binlog_size: 512M
+  sql_mode: NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+#sql_mode = STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+  innodb_buffer_pool_size: 1G
+  innodb_log_file_size: 256M
+  innodb_log_buffer_size: 16M
+
+
+db_user: db_user_example
+db_password: db_pass_example
+db_priv: "*.*:ALL"
+
+#------------------------------------ SVN SETTINGS --------------------------------------
+# svn_username: username
+# svn_password: password
+
+#------------------------------------ DEPLOY AUTH SETTINGS --------------------------------------
+deploy_username: deploy_username_example
+deploy_password: deploy_password_example
+
+#--------------------------------- GIT-KEYS USERS --------------------------------------
+git_keys_users:
+  - www-data
+  - jenkins
+
+
+#------------------------------- PROJECT SETTINGS -----------------------------------
+project_path: /work/webroot/0-project
+project_env: Production
+project_composer_options: '--no-dev'
+project_submodules: no
+project_disable_cron: yes
+
+#------------------------------------ XDEBUG -------------------------------------------
+xdebug:
+  profiler_output_dir: '/tmp'
+
+#----------------------------------- OpCache -------------------------------------------
+opcache:
+  opcache.enable_cli: 1

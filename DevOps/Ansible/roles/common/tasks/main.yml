@@ -1,0 +1,96 @@
+---
+
+- name: Configuring /etc/apt/sources.list
+  template:
+    src: templates/sources.list
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update all packages to the latest version
+  apt:
+#    autoremove: yes
+    upgrade: safe
+    update_cache: yes
+
+- name: Installing base utilities
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - mc
+    - vim
+    - htop
+    - iftop
+    - iotop
+    - git
+    - python-mysqldb
+    - curl
+    - tree
+    - mtr
+    - bash-completion
+    - dnsutils
+    - subversion
+    - catdoc
+    - make
+    - g++
+    - graphviz
+    - memcached
+    - zip
+    - sshfs
+    - python-netaddr
+    - imagemagick
+    - smartmontools
+    - atop
+    - rsync
+    - cifs-utils
+    - unrar
+    - qpress
+
+- name: Install openvpn server package
+  apt:
+    name: openvpn
+    state: present
+  when: apt_install_openvpn == true
+
+- name: Removing NTP package
+  apt:
+    name: ntp
+    state: absent
+
+- name: Copy systemd timesyncd.conf
+  copy:
+    src: files/timesyncd.conf
+    dest: /etc/systemd/timesyncd.conf
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable getting time from NTP source
+  raw: '/usr/bin/timedatectl set-ntp true'
+
+- name: Setting timezone to Europe/Kiev
+  raw: '/usr/bin/timedatectl set-timezone Europe/Kiev'
+
+- name: Enable systemd-timesyncd service
+  service:
+    name: systemd-timesyncd
+    enabled: yes
+
+- name: Adding ns record to /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1 {{ item.key }}"
+    insertafter: EOF
+  with_dict: "{{ vhosts }}"
+
+#- name: Setting /etc/motd
+#  template:
+#    src: templates/motd
+#    dest: /etc/motd
+#    owner: root
+#    group: root
+#    mode: 0644

@@ -1,0 +1,18 @@
+---
+
+- hosts: all
+  user: root
+#  become: True
+  vars_files:
+    - settings/preproduction.yml
+  roles:
+    - { role: common, tags: common }
+    - { role: lamp, tags: [ 'apache2', 'php' ] }
+    - { role: preproduction, tags: dirs }
+    - { role: apache_vhosts, tags: vhosts }
+    - { role: xdebug, tags: xdebug }
+    - { role: phantomjs, tags: tests }
+    - { role: git-keys, tags: ['git', 'keys', 'root', 'www-data'] }
+    - { role: jenkins, tags: jenkins }
+    - { role: project, tags: project }
+#    - { role: iptables, tags: production }
